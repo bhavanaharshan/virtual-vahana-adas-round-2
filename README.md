@@ -29,13 +29,11 @@ This stack was built and tested on Ubuntu with an **Acer Nitro 16 (NVIDIA RTX 40
 1. **Start the CARLA Server:**
    ```bash
    ./CarlaUE4.sh -quality-level=Low
-
-2.**Activate the environment and run:**
-  ```bash
-  source vahana/bin/activate
-  python main.py
-  ```
-  
+2. **Activate the environment and run:**
+   ```bash
+    source vahana/bin/activate
+    python main.py
+   ```
 3. **Controls**
 Press w to cycle through dynamic weather conditions
 Press q to safely terminate stack and clean up simulator actors
