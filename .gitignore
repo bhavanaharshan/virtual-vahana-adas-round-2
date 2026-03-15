@@ -1,0 +1,11 @@
+# Environments
+vahana/
+carla_env/
+venv/
+__pycache__/
+
+# Model Weights
+*.pt
+
+# OS generated files
+.DS_Store
