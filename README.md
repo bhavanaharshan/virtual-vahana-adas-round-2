@@ -34,7 +34,7 @@ This stack was built and tested on Ubuntu with an **Acer Nitro 16 (NVIDIA RTX 40
     ```bash
     source /home/bhavana-ph/Virtual\ Vahana/vahana/bin/activate
     python main.py
-   ```
+    
 3. **Controls**
 Press w to cycle through dynamic weather conditions
 Press q to safely terminate stack and clean up simulator actors
