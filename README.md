@@ -31,9 +31,10 @@ This stack was built and tested on Ubuntu with an **Acer Nitro 16 (NVIDIA RTX 40
    ./CarlaUE4.sh -quality-level=Low
 
 2.**Activate the environment and run:**
-    ```bash
+   ```bash
        source /home/bhavana-ph/Virtual\ Vahana/vahana/bin/activate
        python main.py
+   ```
     
 3. **Controls**
 Press w to cycle through dynamic weather conditions
