@@ -8,7 +8,7 @@ The stack is strictly modular, divided into four core pipelines to transition fr
 
 1. **Perception (`core/perception.py`):** Utilizes **YOLOv8 Nano** to process RGB camera feeds in real-time, detecting dynamic obstacles (vehicles, bicycles, motorcycles) and pedestrians.
 2. **Planning (`core/planning.py`):** Interfaces with CARLA's HD Map API to generate forward-looking waypoints, actively filtering out oncoming traffic lanes to prevent routing errors.
-3. **Control (`core/control.py`):** * **Lateral Control:** Implements a **Stanley Controller** to compute cross-track and heading errors, keeping the ego-vehicle centered in its lane.
+3. **Control (`core/control.py`):**  **Lateral Control:** Implements a **Stanley Controller** to compute cross-track and heading errors, keeping the ego-vehicle centered in its lane.
    * **Longitudinal Control:** Uses a **PID Controller** to manage throttle and braking for smooth acceleration to target speeds.
 4. **Safety & Arbitration (`core/safety.py`):** An independent Autonomous Emergency Braking (AEB) layer. It calculates depth using bounding box dimensions within a defined "AEB Corridor" and forces an immediate throttle override/full-brake if a collision is imminent.
 
@@ -34,6 +34,7 @@ This stack was built and tested on Ubuntu with an **Acer Nitro 16 (NVIDIA RTX 40
     ```bash
     source /home/bhavana-ph/Virtual\ Vahana/vahana/bin/activate
     python main.py
+   ```
 3. **Controls**
 Press w to cycle through dynamic weather conditions
 Press q to safely terminate stack and clean up simulator actors
