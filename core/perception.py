@@ -1,17 +1,15 @@
-
-# using yolo v8 nano here 
-
 import cv2
 import numpy as np
 from ultralytics import YOLO
 
 class PerceptionModule:
-    def __init__(self, model_path='yolov8n.pt'):
+    # Updated the default parameter to reflect your new, smarter model!
+    def __init__(self, model_path='yolov8s.pt'):
         print(f"Loading YOLOv8 model from {model_path}...")
-        # This will automatically download yolov8n.pt if it's not in your folder
+        
+        # Now it dynamically loads whatever string is passed in model_path
         self.model = YOLO(model_path)
         
-        # COCO dataset class IDs we care about for the ADAS challenge
         # Expanded COCO dataset classes to include generic road obstacles
         self.target_classes = {
             0: 'pedestrian',
@@ -57,7 +55,9 @@ class PerceptionModule:
                 # Draw bounding box based on object type
                 color = (0, 0, 255) if class_id == 0 else (0, 255, 0) # Red for pedestrians, Green for others
                 cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), color, 2)
-                cv2.putText(annotated_frame, label, (x1, y1 - 10), 
+                
+                # Move the YOLO label slightly higher so it doesn't overlap with our new 3D LiDAR text!
+                cv2.putText(annotated_frame, label, (x1, max(15, y1 - 40)), 
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
         return annotated_frame, detections

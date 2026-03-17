@@ -32,7 +32,7 @@ This stack was built and tested on Ubuntu with an **Acer Nitro 16 (NVIDIA RTX 40
 
 2.**Activate the environment and run:**
     ```bash
-    source vahana/bin/activate
+    source /home/bhavana-ph/Virtual\ Vahana/vahana/bin/activate
     python main.py
 3. **Controls**
 Press w to cycle through dynamic weather conditions

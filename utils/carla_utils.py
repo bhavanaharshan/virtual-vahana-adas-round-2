@@ -5,14 +5,15 @@ import cv2
 
 class CarlaEnvironment:
     def __init__(self):
-        # Connect to the CARLA server
         self.client = carla.Client('localhost', 2000)
         self.client.set_timeout(10.0)
         self.world = self.client.get_world()
         self.blueprint_library = self.world.get_blueprint_library()
         self.actor_list = []
         self.vehicle = None
-        self.camera_data = None
+        self.lidar_data = None
+        # CHANGED: Now a dictionary to hold three camera feeds
+        self.camera_data = {'center': None, 'left': None, 'right': None}
 
     def spawn_ego_vehicle(self, model='vehicle.tesla.model3'):
         blueprint = self.blueprint_library.find(model)
@@ -32,30 +33,56 @@ class CarlaEnvironment:
         return self.vehicle
 
     def attach_camera(self):
-        if not self.vehicle:
-            print("No vehicle to attach camera to!")
-            return
+        if not self.vehicle: return
 
         cam_bp = self.blueprint_library.find('sensor.camera.rgb')
         cam_bp.set_attribute('image_size_x', '800')
         cam_bp.set_attribute('image_size_y', '600')
         cam_bp.set_attribute('fov', '90')
         
-        # Position the camera on the roof/windshield area
-        spawn_point = carla.Transform(carla.Location(x=1.5, z=2.4))
-        self.camera = self.world.spawn_actor(cam_bp, spawn_point, attach_to=self.vehicle)
-        self.actor_list.append(self.camera)
-        
-        # Listen to sensor data and pass it to our processing function
-        self.camera.listen(lambda image: self._process_img(image))
-        print("RGB Camera attached.")
+        # 1. Center Camera (Forward)
+        center_trans = carla.Transform(carla.Location(x=1.5, z=2.4))
+        self.cam_center = self.world.spawn_actor(cam_bp, center_trans, attach_to=self.vehicle)
+        self.cam_center.listen(lambda image: self._process_img(image, 'center'))
 
-    def _process_img(self, image):
-        # Convert raw CARLA sensor data to a numpy array for OpenCV
+        # 2. Left Camera (Yaw = -90 degrees)
+        left_trans = carla.Transform(carla.Location(x=1.0, y=-0.5, z=2.4), carla.Rotation(yaw=-90))
+        self.cam_left = self.world.spawn_actor(cam_bp, left_trans, attach_to=self.vehicle)
+        self.cam_left.listen(lambda image: self._process_img(image, 'left'))
+
+        # 3. Right Camera (Yaw = 90 degrees)
+        right_trans = carla.Transform(carla.Location(x=1.0, y=0.5, z=2.4), carla.Rotation(yaw=90))
+        self.cam_right = self.world.spawn_actor(cam_bp, right_trans, attach_to=self.vehicle)
+        self.cam_right.listen(lambda image: self._process_img(image, 'right'))
+        
+        self.actor_list.extend([self.cam_center, self.cam_left, self.cam_right])
+        print("Surround Cameras attached (Center, Left, Right).")
+
+    def _process_img(self, image, cam_pos):
         i = np.array(image.raw_data)
-        i2 = i.reshape((600, 800, 4))  # RGBA format
-        i3 = i2[:, :, :3]              # Drop Alpha channel (RGB)
-        self.camera_data = i3
+        i2 = i.reshape((600, 800, 4))
+        i3 = i2[:, :, :3]
+        self.camera_data[cam_pos] = i3
+    
+    def attach_lidar(self):
+        lidar_bp = self.blueprint_library.find('sensor.lidar.ray_cast')
+        lidar_bp.set_attribute('channels', '32')
+        lidar_bp.set_attribute('range', '50.0')
+        lidar_bp.set_attribute('points_per_second', '100000')
+        lidar_bp.set_attribute('rotation_frequency', '20')
+
+        # Spawn at the exact same location as the center camera (z=2.4)
+        lidar_trans = carla.Transform(carla.Location(x=1.5, z=2.4))
+        self.lidar = self.world.spawn_actor(lidar_bp, lidar_trans, attach_to=self.vehicle)
+        self.lidar.listen(lambda data: self._process_lidar(data))
+        self.actor_list.append(self.lidar)
+        print("LiDAR attached for Sensor Fusion.")
+
+    def _process_lidar(self, data):
+        # Convert raw CARLA LiDAR data to a NumPy array of [X, Y, Z]
+        points = np.frombuffer(data.raw_data, dtype=np.dtype('f4'))
+        points = np.reshape(points, (int(points.shape[0] / 4), 4))
+        self.lidar_data = points[:, :3] # We only need X, Y, Z (dropping intensity)
 
     def cleanup(self):
         print("Cleaning up actors...")
